@@ -1,4 +1,4 @@
-# The Cisco .deb lives as a release asset on a private GitHub repo (needs `gh auth login`).
+# The Cisco .deb lives as a release asset on GitHub (too big for git), fetched with plain curl.
 REPO   ?= somethim/packettracer
 PREFIX ?= /usr/local
 VER    := $(shell sed -n 's/^pkgver=//p' PKGBUILD 2>/dev/null)
@@ -8,7 +8,7 @@ APPDIR  = $(DESTDIR)$(PREFIX)/lib/packettracer
 SHARE   = $(DESTDIR)$(PREFIX)/share
 DESKTOPS = CiscoPacketTracer CiscoPacketTracerPtsa
 
-.PHONY: install install-generic files fetch upload uninstall clean
+.PHONY: install install-generic files fetch uninstall clean
 
 # Arch: build a real pacman package. Everything else: install-generic.
 install: $(DEB)
@@ -24,7 +24,8 @@ install-generic: squashfs-root
 fetch: $(DEB)
 
 $(DEB):
-	gh release download v$(VER) -R $(REPO) -p $(DEB)
+	curl -fL -o $@.part https://github.com/$(REPO)/releases/download/v$(VER)/$(DEB)
+	mv $@.part $@
 
 data.tar.xz: $(DEB)
 	ar x $(DEB) data.tar.xz
@@ -48,10 +49,6 @@ files: opt/pt/packettracer.AppImage squashfs-root
 		sed -e 's|@EXEC_PATH@|$(PREFIX)/bin/packettracer|' -e 's|^Icon=.*|Icon=packettracer|' \
 			squashfs-root/$$d-*.desktop > $(SHARE)/applications/$$d.desktop; \
 	done
-
-# New version: put the new .deb here, bump pkgver + source + sha512sums in PKGBUILD, then `make upload`.
-upload:
-	gh release create v$(VER) $(DEB) -R $(REPO) -t "Packet Tracer $(VER)" -n "Cisco .deb used by PKGBUILD"
 
 uninstall:
 ifneq ($(shell command -v pacman),)

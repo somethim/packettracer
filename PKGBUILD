@@ -7,7 +7,7 @@
 
 pkgname=packettracer
 pkgver=9.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="A cross-platform visual simulation tool designed by Cisco Systems that allows users to create network topologies and imitate modern computer network"
 arch=( 'x86_64' )
 depends=('fuse2')
@@ -24,5 +24,19 @@ package() {
 	chown -R 0:0 "${pkgdir}"
 	mkdir -p "${pkgdir}/usr/lib/"
 	mv "${pkgdir}/opt/pt/" "${pkgdir}/usr/lib/packettracer/"
+	rmdir "${pkgdir}/opt"
+
+	# launcher, icon and desktop entries, taken from the AppImage itself
+	install -d "${pkgdir}/usr/bin"
+	ln -s /usr/lib/packettracer/packettracer.AppImage "${pkgdir}/usr/bin/packettracer"
+	"${pkgdir}/usr/lib/packettracer/packettracer.AppImage" --appimage-extract 'app.png' >/dev/null
+	"${pkgdir}/usr/lib/packettracer/packettracer.AppImage" --appimage-extract '*.desktop' >/dev/null
+	install -Dm644 squashfs-root/app.png "${pkgdir}/usr/share/icons/hicolor/48x48/apps/packettracer.png"
+	local name
+	for name in CiscoPacketTracer CiscoPacketTracerPtsa; do
+		sed -e 's|@EXEC_PATH@|/usr/bin/packettracer|' -e 's|^Icon=.*|Icon=packettracer|' \
+			squashfs-root/${name}-${pkgver}.desktop > ${name}.desktop
+		install -Dm644 ${name}.desktop "${pkgdir}/usr/share/applications/${name}.desktop"
+	done
 
 }

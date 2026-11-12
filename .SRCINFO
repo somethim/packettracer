@@ -5,10 +5,13 @@ pkgbase = packettracer
 	url = https://www.netacad.com/resources/lab-downloads
 	arch = x86_64
 	license = LicenseRef-Cisco-EULA
+	makedepends = make
 	depends = fuse2
 	options = !strip
 	options = !emptydirs
 	source = local://CiscoPacketTracer_901_Ubuntu_64bit.deb
+	source = Makefile
 	sha512sums = c5525758fd1cbdbf59b4b8a2968073a614e4c0d89a987c6fbe8fa8568a46abbd6961f547ae682cc11248fc26af52c962aaa9c0a3a3905b7669ecfbe36a8d3e5d
+	sha512sums = SKIP
 
 pkgname = packettracer

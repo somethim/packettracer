@@ -1,4 +1,7 @@
 *.deb
 *.pkg.tar.*
+data.tar.xz
+opt/
+squashfs-root/
 src/
 pkg/

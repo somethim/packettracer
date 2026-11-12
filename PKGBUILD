@@ -15,28 +15,14 @@ options=('!strip' '!emptydirs')
 url="https://www.netacad.com/resources/lab-downloads"
 license=('LicenseRef-Cisco-EULA')
 
-source=('local://CiscoPacketTracer_901_Ubuntu_64bit.deb')
-sha512sums=('c5525758fd1cbdbf59b4b8a2968073a614e4c0d89a987c6fbe8fa8568a46abbd6961f547ae682cc11248fc26af52c962aaa9c0a3a3905b7669ecfbe36a8d3e5d')
+makedepends=('make')
+source=('local://CiscoPacketTracer_901_Ubuntu_64bit.deb' 'Makefile')
+sha512sums=('c5525758fd1cbdbf59b4b8a2968073a614e4c0d89a987c6fbe8fa8568a46abbd6961f547ae682cc11248fc26af52c962aaa9c0a3a3905b7669ecfbe36a8d3e5d'
+            'SKIP')
 
 package() {
 
-	tar xf data.tar.xz -C "${pkgdir}"
-	chown -R 0:0 "${pkgdir}"
-	mkdir -p "${pkgdir}/usr/lib/"
-	mv "${pkgdir}/opt/pt/" "${pkgdir}/usr/lib/packettracer/"
-	rmdir "${pkgdir}/opt"
-
-	# launcher, icon and desktop entries, taken from the AppImage itself
-	install -d "${pkgdir}/usr/bin"
-	ln -s /usr/lib/packettracer/packettracer.AppImage "${pkgdir}/usr/bin/packettracer"
-	"${pkgdir}/usr/lib/packettracer/packettracer.AppImage" --appimage-extract 'app.png' >/dev/null
-	"${pkgdir}/usr/lib/packettracer/packettracer.AppImage" --appimage-extract '*.desktop' >/dev/null
-	install -Dm644 squashfs-root/app.png "${pkgdir}/usr/share/icons/hicolor/48x48/apps/packettracer.png"
-	local name
-	for name in CiscoPacketTracer CiscoPacketTracerPtsa; do
-		sed -e 's|@EXEC_PATH@|/usr/bin/packettracer|' -e 's|^Icon=.*|Icon=packettracer|' \
-			squashfs-root/${name}-${pkgver}.desktop > ${name}.desktop
-		install -Dm644 ${name}.desktop "${pkgdir}/usr/share/applications/${name}.desktop"
-	done
+	# AppImage, launcher, icon and desktop entries: same steps as `make install-generic`
+	make squashfs-root files DESTDIR="${pkgdir}" PREFIX=/usr
 
 }
